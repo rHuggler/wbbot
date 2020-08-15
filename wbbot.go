@@ -28,9 +28,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	accessToken, err := GetAccessToken()
-	if err != nil {
-		log.Fatal(err)
-	}
+	// message := "Hi"
 
+	// err = SendMessage(accessToken, message)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+
+	ServeAuthentication()
+
+	// c := cron.New()
+
+	// c.Start()
 }

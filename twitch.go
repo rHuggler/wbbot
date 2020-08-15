@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,7 +19,7 @@ type AccessToken struct {
 }
 
 // GetAccessToken generates a new access token on Twitch API
-func GetAccessToken() (*AccessToken, error) {
+func GetAccessToken() (*AccessToken, error) { // TODO: Get oauth user token
 	baseURL, err := url.Parse("https://id.twitch.tv/oauth2/token")
 	if err != nil {
 		return nil, err
@@ -47,4 +49,26 @@ func GetAccessToken() (*AccessToken, error) {
 	}
 
 	return accessToken, nil
+}
+
+// SendMessage sends a message to a Twitch channel
+func SendMessage(accessToken *AccessToken, message string) error {
+	c, err := net.Dial("tcp", "irc.chat.twitch.tv:6667")
+	if err != nil {
+		return err
+	}
+
+	passMessage := "PASS oauth:" + accessToken.AccessToken
+	fmt.Fprintf(c, "%s\r\n", passMessage)
+
+	nickMessage := "NICK rhuggler1"
+	fmt.Fprintf(c, "%s\r\n", nickMessage)
+
+	joinMessage := "JOIN #rhuggler1"
+	fmt.Fprintf(c, "%s\r\n", joinMessage)
+
+	privMessage := "PRIVMSG #rhuggler1 :" + message
+	fmt.Fprintf(c, "%s\r\n", privMessage)
+
+	return nil
 }
