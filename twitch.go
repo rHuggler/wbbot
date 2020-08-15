@@ -16,7 +16,7 @@ func SendMessage(message string) error {
 	passMessage := "PASS " + os.Getenv("OAUTH_TOKEN")
 	fmt.Fprintf(c, "%s\r\n", passMessage)
 
-	nickMessage := "NICK " + os.Getenv("TWITCH_CHANNEL")
+	nickMessage := "NICK " + os.Getenv("TWITCH_USERNAME")
 	fmt.Fprintf(c, "%s\r\n", nickMessage)
 
 	joinMessage := "JOIN #" + os.Getenv("TWITCH_CHANNEL")
