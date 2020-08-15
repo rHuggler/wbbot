@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/gocarina/gocsv"
@@ -38,13 +39,24 @@ func main() {
 
 	c := cron.New(cron.WithLocation(location))
 
+	fmt.Printf("Adding %d entries\n", len(events))
+
+	botConfig := BotConfig{
+		token:    os.Getenv("OAUTH_TOKEN"),
+		username: os.Getenv("TWITCH_USERNAME"),
+		channel:  os.Getenv("TWITCH_CHANNEL"),
+	}
+
+	b := NewBot(botConfig)
+	b.Authenticate()
+
 	for _, event := range events {
 		time, err := event.GetTime()
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		schedule := fmt.Sprintf("0 %d %d * * *", time.Minute(), time.Hour())
+		schedule := fmt.Sprintf("%d %d * * *", time.Minute(), time.Hour())
 
 		message := ""
 		if event.HardcoreBoss != "" {
@@ -53,12 +65,20 @@ func main() {
 			message = fmt.Sprintf("Active world boss: %s", event.Boss)
 		}
 
-		fmt.Printf("Crontab: %s\nMessage: %s\n", schedule, message)
-
-		c.AddFunc(schedule, func() {
-			SendMessage(message)
+		_, err = c.AddFunc(schedule, func() {
+			b.SendMessage(message)
 		})
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	c.Start()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	<-quit
+
+	fmt.Println("Terminate by user")
 }
