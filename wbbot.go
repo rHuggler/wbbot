@@ -1,11 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gocarina/gocsv"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 )
 
 func main() {
@@ -28,16 +31,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// message := "Hi"
+	location, err := time.LoadLocation("America/Sao_Paulo")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// err = SendMessage(accessToken, message)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	c := cron.New(cron.WithLocation(location))
 
-	ServeAuthentication()
+	for _, event := range events {
+		time, err := event.GetTime()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// c := cron.New()
+		schedule := fmt.Sprintf("0 %d %d * * *", time.Minute(), time.Hour())
 
-	// c.Start()
+		message := ""
+		if event.HardcoreBoss != "" {
+			message = fmt.Sprintf("Active world bosses: %s and %s", event.Boss, event.HardcoreBoss)
+		} else {
+			message = fmt.Sprintf("Active world boss: %s", event.Boss)
+		}
+
+		fmt.Printf("Crontab: %s\nMessage: %s\n", schedule, message)
+
+		c.AddFunc(schedule, func() {
+			SendMessage(message)
+		})
+	}
+
+	c.Start()
 }
