@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"net/textproto"
+	"os"
+	"strings"
 )
 
 // BotConfig provides Bot configuration parameters
@@ -32,7 +36,7 @@ func NewBot(config BotConfig) *Bot {
 	}
 }
 
-// Authenticate authenticates against Twitch.tv's IRC server and joins the channel
+// Authenticate authenticates against Twitch.tv's IRC server and joins a channel
 func (b Bot) Authenticate() {
 	passMessage := fmt.Sprintf("PASS %s", b.Config.token)
 	fmt.Fprintf(b.Connection, "%s\r\n", passMessage)
@@ -48,4 +52,26 @@ func (b Bot) Authenticate() {
 func (b Bot) SendMessage(message string) {
 	privMessage := fmt.Sprintf("PRIVMSG #%s :%s", b.Config.channel, message)
 	fmt.Fprintf(b.Connection, "%s\r\n", privMessage)
+}
+
+// Listen listens for messages from Twitch.tv's IRC
+func (b Bot) Listen() {
+	reader := bufio.NewReader(b.Connection)
+	tp := textproto.NewReader(reader)
+
+	for {
+		line, err := tp.ReadLine()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if strings.HasPrefix(line, "PING") {
+			pongMessage := "PONG :tmi.twitch.tv"
+			fmt.Fprintf(b.Connection, "%s\r\n", pongMessage)
+		}
+
+		if os.Getenv("DEBUG") != "" {
+			fmt.Println(line)
+		}
+	}
 }

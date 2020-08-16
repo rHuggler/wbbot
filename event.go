@@ -9,7 +9,7 @@ type Event struct {
 	HardcoreBoss string `csv:"hardcore_world_boss"`
 }
 
-// GetTime parses HH:MM time to an UTC-3 datetime
+// GetTime parses HH:MM time to an UTC-3 Time
 func (e Event) GetTime() (time.Time, error) {
 	eventTime, err := time.Parse("15:04", e.Time)
 	if err != nil {
