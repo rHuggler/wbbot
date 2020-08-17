@@ -35,7 +35,11 @@ func StartEventsCron(events []*Event, b *Bot) error {
 		}
 
 		_, err = c.AddFunc(schedule, func() {
-			b.SendMessage(message)
+			b.SendMessage(&IRCMessage{
+				Command: priv,
+				Channel: b.Config.channel,
+				Message: message,
+			})
 		})
 		if err != nil {
 			return err

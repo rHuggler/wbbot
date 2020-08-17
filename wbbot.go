@@ -39,6 +39,8 @@ func main() {
 	b := NewBot(botConfig)
 	b.Authenticate()
 
+	b.Events = events
+
 	go b.Listen()
 
 	err = StartEventsCron(events, b)
