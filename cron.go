@@ -17,18 +17,21 @@ func StartEventsCron(events []*Event, b *Bot) error {
 	c := cron.New(cron.WithLocation(location))
 
 	for _, event := range events {
-		time, err := event.GetTime()
+		eventTime, err := event.GetTime()
 		if err != nil {
 			return err
 		}
 
-		schedule := fmt.Sprintf("%d %d * * *", time.Minute(), time.Hour())
+		// Subtracts 10 minutes
+		eventTime = eventTime.Add(-10 * time.Minute)
+
+		schedule := fmt.Sprintf("%d %d * * *", eventTime.Minute(), eventTime.Hour())
 
 		message := ""
 		if event.HardcoreBoss != "" {
-			message = fmt.Sprintf("Active world bosses: %s and %s", event.Boss, event.HardcoreBoss)
+			message = fmt.Sprintf("Os seguintes World Bosses estarão ativos em 10 minutos: %s and %s", event.Boss, event.HardcoreBoss)
 		} else {
-			message = fmt.Sprintf("Active world boss: %s", event.Boss)
+			message = fmt.Sprintf("O seguinte World Boss estará ativo em 10 minutos: %s", event.Boss)
 		}
 
 		_, err = c.AddFunc(schedule, func() {
