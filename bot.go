@@ -27,7 +27,7 @@ type Bot struct {
 }
 
 var (
-	messageRegex = regexp.MustCompile(`:(?P<username>\w+)!\w+@(?:\w+\.?)+\s(?P<command>\w+)\s#(?P<channel>\w+)\s:(?P<isCommand>\!)?(?P<message>.+\s*)+`)
+	messageRegex = regexp.MustCompile(`(?::(?P<username>\w+)!\w+@(?:\w+\.?)+\s)?(?P<command>\w+)\s(?:#(?P<channel>\w+)\s?)?(?::(?P<isCommand>\!)?(?P<message>.+\s*)+)?`)
 )
 
 // NewBot returns a Bot pointer

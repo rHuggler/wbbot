@@ -1,0 +1,13 @@
+:tmi.twitch.tv 001 worldbossbot :Welcome, GLHF!
+:tmi.twitch.tv 002 worldbossbot :Your host is tmi.twitch.tv
+:tmi.twitch.tv 003 worldbossbot :This server is rather new
+:tmi.twitch.tv 004 worldbossbot :-
+:tmi.twitch.tv 375 worldbossbot :-
+:tmi.twitch.tv 372 worldbossbot :You are in a maze of twisty passages, all alike.
+:tmi.twitch.tv 376 worldbossbot :>
+:worldbossbot!worldbossbot@worldbossbot.tmi.twitch.tv JOIN #rhuggler1
+:worldbossbot.tmi.twitch.tv 353 worldbossbot = #rhuggler1 :worldbossbot
+:worldbossbot.tmi.twitch.tv 366 worldbossbot #rhuggler1 :End of /NAMES list
+:rhuggler1!rhuggler1@rhuggler1.tmi.twitch.tv PRIVMSG #rhuggler1 :foda meu amigo
+:rhuggler1!rhuggler1@rhuggler1.tmi.twitch.tv PRIVMSG #rhuggler1 :!wb
+PING :tmi.twitch.tv
