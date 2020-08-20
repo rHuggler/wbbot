@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/ring"
 	"fmt"
 	"log"
 	"os"
@@ -40,6 +41,15 @@ func main() {
 	b.Authenticate()
 
 	b.Events = events
+
+	r := ring.New(len(b.Events))
+
+	for i := 0; i < r.Len(); i++ {
+		r.Value = b.Events[i]
+		r = r.Next()
+	}
+
+	b.EventRotation = r
 
 	go b.Listen()
 

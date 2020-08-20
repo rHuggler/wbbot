@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"container/ring"
 	"fmt"
 	"log"
 	"net"
@@ -21,9 +22,10 @@ type BotConfig struct {
 
 // Bot is a Twitch.tv chatbot
 type Bot struct {
-	Connection net.Conn
-	Config     BotConfig
-	Events     []*Event
+	Connection    net.Conn
+	Config        BotConfig
+	Events        []*Event
+	EventRotation *ring.Ring
 }
 
 var (
@@ -68,35 +70,55 @@ func (b Bot) SendMessage(message *IRCMessage) {
 }
 
 // Respond responds to user commands
-func (b Bot) Respond(message *IRCMessage) {
+func (b Bot) Respond(message *IRCMessage, timeNow time.Time) IRCMessage {
 	if message.Message == "wb" {
-		counter := 0
 		nextEvents := []string{}
 
-		for _, event := range b.Events {
-			if counter == 3 {
-				break
-			}
+		for i := 0; i < b.EventRotation.Len(); i++ {
+			event := b.EventRotation.Value.(*Event)
 
-			eventTime, err := event.GetTime()
+			eventMinutes, err := event.GetMinutes()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			if eventTime.After(time.Now()) {
-				counter++
-				nextEvents = append(nextEvents, fmt.Sprintf("(%d:%d) %s %s", eventTime.Hour(), eventTime.Minute(), event.Boss, event.HardcoreBoss))
+			minutesNow := timeNow.Hour()*60 + timeNow.Minute()
+
+			if eventMinutes > minutesNow {
+				eventMessage := fmt.Sprintf("(%s) %s", event.Time, event.Boss)
+				if event.HardcoreBoss != "" {
+					eventMessage += fmt.Sprintf(", %s", event.HardcoreBoss)
+				}
+				nextEvents = append(nextEvents, eventMessage)
+				b.EventRotation = b.EventRotation.Next()
+				break
 			}
+
+			b.EventRotation = b.EventRotation.Next()
+		}
+
+		for i := 0; i < 2; i++ {
+			event := b.EventRotation.Value.(*Event)
+
+			eventMessage := fmt.Sprintf("(%s) %s", event.Time, event.Boss)
+			if event.HardcoreBoss != "" {
+				eventMessage += fmt.Sprintf(", %s", event.HardcoreBoss)
+			}
+			nextEvents = append(nextEvents, eventMessage)
+
+			b.EventRotation = b.EventRotation.Next()
 		}
 
 		nextEventsMessage := "Os próximos World Bosses serão: " + strings.Join(nextEvents, " -- ")
 
-		b.SendMessage(&IRCMessage{
+		return IRCMessage{
 			Command: priv,
 			Channel: b.Config.channel,
 			Message: nextEventsMessage,
-		})
+		}
 	}
+
+	return IRCMessage{}
 }
 
 func (b Bot) parseMessage(line string) *IRCMessage {
@@ -139,7 +161,8 @@ func (b Bot) Listen() {
 		}
 
 		if message.IsCommand {
-			b.Respond(message)
+			response := b.Respond(message, time.Now())
+			b.SendMessage(&response)
 		}
 
 		if os.Getenv("DEBUG") != "" {

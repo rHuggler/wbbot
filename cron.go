@@ -29,7 +29,7 @@ func StartEventsCron(events []*Event, b *Bot) error {
 
 		message := ""
 		if event.HardcoreBoss != "" {
-			message = fmt.Sprintf("Os seguintes World Bosses estarão ativos em 10 minutos: %s and %s", event.Boss, event.HardcoreBoss)
+			message = fmt.Sprintf("Os seguintes World Bosses estarão ativos em 10 minutos: %s e %s", event.Boss, event.HardcoreBoss)
 		} else {
 			message = fmt.Sprintf("O seguinte World Boss estará ativo em 10 minutos: %s", event.Boss)
 		}

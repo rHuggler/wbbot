@@ -1,6 +1,11 @@
 package main
 
-import "time"
+import (
+	"errors"
+	"strconv"
+	"strings"
+	"time"
+)
 
 // Event is a world boss event
 type Event struct {
@@ -26,4 +31,27 @@ func (e Event) GetTime() (time.Time, error) {
 	eventTime = time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), eventTime.Hour(), eventTime.Minute(), 0, 0, location)
 
 	return eventTime, nil
+}
+
+// GetMinutes parses an HH:MM timestamp and return the total of minutes in that timestamp
+func (e Event) GetMinutes() (int, error) {
+	slices := strings.Split(e.Time, ":")
+
+	if len(slices) < 2 {
+		return 0, errors.New("Could not split time")
+	}
+
+	hours, err := strconv.Atoi(slices[0])
+	if err != nil {
+		return 0, err
+	}
+
+	minutes, err := strconv.Atoi(slices[1])
+	if err != nil {
+		return 0, err
+	}
+
+	totalMinutes := hours*60 + minutes
+
+	return totalMinutes, nil
 }
