@@ -5,6 +5,7 @@ import (
 	"container/ring"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/textproto"
 	"os"
@@ -74,6 +75,7 @@ func (b Bot) Respond(message *IRCMessage, timeNow time.Time) IRCMessage {
 	if message.Message == "wb" {
 		nextEvents := []string{}
 
+		// Sets b.EventRotation to the upcoming event
 		for i := 0; i < b.EventRotation.Len(); i++ {
 			event := b.EventRotation.Value.(*Event)
 
@@ -85,31 +87,33 @@ func (b Bot) Respond(message *IRCMessage, timeNow time.Time) IRCMessage {
 			minutesNow := timeNow.Hour()*60 + timeNow.Minute()
 
 			if eventMinutes > minutesNow {
-				eventMessage := fmt.Sprintf("(%s) %s", event.Time, event.Boss)
-				if event.HardcoreBoss != "" {
-					eventMessage += fmt.Sprintf(", %s", event.HardcoreBoss)
-				}
-				nextEvents = append(nextEvents, eventMessage)
-				b.EventRotation = b.EventRotation.Next()
 				break
 			}
 
 			b.EventRotation = b.EventRotation.Next()
 		}
 
-		for i := 0; i < 2; i++ {
+		// Get the message for the 3 upcoming events
+		for i := 0; i < 3; i++ {
 			event := b.EventRotation.Value.(*Event)
 
-			eventMessage := fmt.Sprintf("(%s) %s", event.Time, event.Boss)
-			if event.HardcoreBoss != "" {
-				eventMessage += fmt.Sprintf(", %s", event.HardcoreBoss)
-			}
+			eventMessage := event.GetMessage()
+
 			nextEvents = append(nextEvents, eventMessage)
 
 			b.EventRotation = b.EventRotation.Next()
 		}
 
-		nextEventsMessage := "Os próximos World Bosses serão: " + strings.Join(nextEvents, " -- ")
+		// Easter Egg
+		if rand.Intn(999) == 999 {
+			return IRCMessage{
+				Command: priv,
+				Channel: b.Config.channel,
+				Message: "Não interessa pra você, palhaço",
+			}
+		}
+
+		nextEventsMessage := "Próximos World Bosses: " + strings.Join(nextEvents, " -- ")
 
 		return IRCMessage{
 			Command: priv,

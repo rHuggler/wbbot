@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -54,4 +55,19 @@ func (e Event) GetMinutes() (int, error) {
 	totalMinutes := hours*60 + minutes
 
 	return totalMinutes, nil
+}
+
+// GetMessage formats all event information in one string (current format: "(00:15) Boss, Hardcore Boss")
+func (e Event) GetMessage() string {
+	bosses := []string{
+		e.Boss,
+	}
+
+	if e.HardcoreBoss != "" {
+		bosses = append(bosses, e.HardcoreBoss)
+	}
+
+	joinedBosses := strings.Join(bosses, ", ")
+
+	return fmt.Sprintf("(%s) %s", e.Time, joinedBosses)
 }
